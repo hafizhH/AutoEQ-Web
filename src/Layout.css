@@ -1,0 +1,16 @@
+
+#main-container {
+    margin: 50px auto;
+    width: 80%;
+}
+
+#main-container h1 {
+    display: block;
+    margin: 0px auto;
+    position: relative;
+    top: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
