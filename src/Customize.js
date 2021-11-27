@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styles from './styles.module.css';
 
@@ -9,13 +10,17 @@ export default function Customize(props) {
   const [trebleMaxGain, setTrebleMaxGain] = useState(0.0);
   const [trebleGainCoef, setTrebleGainCoef] = useState(0.0);
   const [trebleTransFreq, setTrebleTransFreq] = useState(100);
-  const [geq, setGeq] = useState(0);
+  const [geq, setGeq] = useState(1);
   const [peq, setPeq] = useState(0);
   const [ceq, setCeq] = useState(0);
   const [feq, setFeq] = useState(0);
+  const [maxFilters, setMaxFilters] = useState(1);
+  const [samplingRate, setSamplingRate] = useState(44100);
+  const [frequency, setFrequency] = useState('31.25Hz, 62.5Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz.');
+  const [freqQ, setFreqQ] = useState('');
+  const [requestStatus, setRequestStatus] = useState('');
 
   const changeOutputOptions = (event) => {
-    //console.log(event.target.checked + ',' + event.target.value);
     if (event.target.checked === true) {
       if (event.target.value === 'geq') setGeq(1);
       else if (event.target.value === 'peq') setPeq(1);
@@ -31,34 +36,49 @@ export default function Customize(props) {
 
   useEffect (() => {
     const gfile = sessionStorage.getItem('file');
-    if (gfile !== null) setFile(gfile);
+    if (gfile != null) setFile(gfile);
 
     const gmaxGain = sessionStorage.getItem('maxGain');
-    if (gmaxGain !== null) setMaxGain(Number.parseFloat(gmaxGain));
+    if (gmaxGain != null) setMaxGain(Number.parseFloat(gmaxGain));
 
     const gbassBoost = sessionStorage.getItem('bassBoost');
-    if (gbassBoost !== null) setBassBoost(Number.parseFloat(gbassBoost));
+    if (gbassBoost != null) setBassBoost(Number.parseFloat(gbassBoost));
 
     const gtilt = sessionStorage.getItem('tilt');
-    if (gtilt !== null) setTilt(Number.parseFloat(gtilt));
+    if (gtilt != null) setTilt(Number.parseFloat(gtilt));
 
     const gtrebleMaxGain = sessionStorage.getItem('trebleMaxGain');
-    if (gtrebleMaxGain !== null) setTrebleMaxGain(Number.parseFloat(gtrebleMaxGain));
+    if (gtrebleMaxGain != null) setTrebleMaxGain(Number.parseFloat(gtrebleMaxGain));
 
     const gtrebleGainCoef = sessionStorage.getItem('trebleGainCoef');
-    if (gtrebleGainCoef !== null) setTrebleGainCoef(Number.parseFloat(gtrebleGainCoef));
+    if (gtrebleGainCoef != null) setTrebleGainCoef(Number.parseFloat(gtrebleGainCoef));
 
     const gtrebleTransFreq = sessionStorage.getItem('trebleTransFreq');
-    if (gtrebleTransFreq !== null) setTrebleTransFreq(Number.parseInt(gtrebleTransFreq));
+    if (gtrebleTransFreq != null) setTrebleTransFreq(Number.parseInt(gtrebleTransFreq));
 
     const ggeq = sessionStorage.getItem('geq');
-    if (ggeq !== null) setGeq(Number.parseInt(ggeq));
+    if (ggeq != null) setGeq(Number.parseInt(ggeq));
     const gpeq = sessionStorage.getItem('peq');
-    if (gpeq !== null) setPeq(Number.parseInt(gpeq));
+    if (gpeq != null) setPeq(Number.parseInt(gpeq));
     const gceq = sessionStorage.getItem('ceq');
-    if (gceq !== null) setCeq(Number.parseInt(gceq));
+    if (gceq != null) setCeq(Number.parseInt(gceq));
     const gfeq = sessionStorage.getItem('feq');
-    if (gfeq !== null) setFeq(Number.parseInt(gfeq));
+    if (gfeq != null) setFeq(Number.parseInt(gfeq));
+
+    const gmaxFilters = sessionStorage.getItem('maxFilters');
+    if (gmaxFilters != null) setMaxFilters(Number.parseInt(gmaxFilters));
+    const gsamplingRate = sessionStorage.getItem('samplingRate');
+    if (gsamplingRate != null) setSamplingRate(Number.parseInt(gsamplingRate));
+    const gfrequency = sessionStorage.getItem('frequency');
+    if (gfrequency != null) setFrequency(gfrequency);
+    const gfreqQ = sessionStorage.getItem('freqQ');
+    if (gfreqQ != null) setFreqQ(gfreqQ);
+
+    axios.get('http://localhost:8000/getCustomizePreviewGraph')
+    .then((response) => {
+      if (response.status === 200)
+        sessionStorage.setItem('previewGraphURL', response.data.imgurl);
+    }).catch((err) => console.log(err.message));
 
     console.log('Item retrieved');
   }, []);
@@ -75,14 +95,52 @@ export default function Customize(props) {
     sessionStorage.setItem('peq', peq.toString());
     sessionStorage.setItem('ceq', ceq.toString());
     sessionStorage.setItem('feq', feq.toString());
+
+    sessionStorage.setItem('maxFilters', maxFilters.toString());
+    sessionStorage.setItem('samplingRate', samplingRate.toString());
+    sessionStorage.setItem('frequency', frequency);
+    sessionStorage.setItem('freqQ', freqQ);
     console.log('Item saved');
-  }, [file, maxGain, bassBoost, tilt, trebleMaxGain, trebleGainCoef, trebleTransFreq, geq, peq, ceq, feq]);
+  }, [file, maxGain, bassBoost, tilt, trebleMaxGain, trebleGainCoef, trebleTransFreq, geq, peq, ceq, feq, maxFilters, samplingRate, frequency, freqQ]);
+
+  const navNextPage = (page) => {
+    setRequestStatus('Uploading to server');
+      axios.post('http://localhost:8000/uploadClientData', 
+      {
+        maxGain: maxGain,
+        bassBoost: bassBoost,
+        tilt: tilt,
+        trebleMaxGain: trebleMaxGain,
+        trebleGainCoef: trebleGainCoef,
+        trableTransFreq: trebleTransFreq,
+        geq: 1,
+        peq: peq,
+        ceq: ceq,
+        feq: feq,
+        maxFilters: (peq === 1 ? maxFilters : -1),
+        samplingRate: (ceq === 1 ? samplingRate : -1),
+        freqency: (feq === 1 ? frequency : ''),
+        freqQ: (feq === 1 ? freqQ : ''),
+      }
+      ).then((response) => {
+        if (response === 200) {
+          sessionStorage.setItem('finalGraphURL', response.data.imgurl);
+          sessionStorage.setItem('downloadURL', response.data.downloadurl);
+          setRequestStatus('Upload Success');
+          props.changePage(page);
+        }
+      }).catch((err) => {
+        console.log(err.message);
+        setRequestStatus('Error occured while uploading to server');
+        props.changePage(page); //Untuk debugging, hapus saat build
+      })
+  }
 
   return (
     <div id="customize" className={styles.page}>
       <div className={styles.pageContainer}>
         <div className={`${styles.floatLeft} ${styles.addHMargin}`}>
-          <img alt="preview-graph" className={styles.imgGraph2x3}/>
+          <img id="preview-graph" src={(sessionStorage.getItem('previewGraphURL') !== null ? sessionStorage.getItem('previewGraphURL') : '')} alt="preview-graph" className={styles.imgGraph2x3}/>
         </div>
         <div className={`${styles.floatRight} ${styles.addHMargin}`}>
           <div className={styles.addVMargin}>
@@ -112,31 +170,62 @@ export default function Customize(props) {
             {trebleTransFreq}
             <br/>
             <span className={styles.text1}>Sound Signature</span>
-            <label htmlFor="soundSignature" className={styles.button}>Upload CSV</label>
+            <label htmlFor="soundSignature" className={`${styles.button} ${styles.addVMargin}`}>Upload CSV</label>
             <input type="file" id="soundSignature" className={styles.hidden} name="soundSignature" accept=".csv" onChange={(event) => setFile(event.target.files[0].name)} />
-            {file}
+            <span className={`${styles.text1} ${styles.addVMargin}`}>{file}</span>
+            <br/>
             <br/>
           </div>
+
+          <br/>
+
           <div className={styles.addVMargin}>
             <span className={`${styles.header2} ${styles.addVMargin}`}>Output Options</span>
-            <input type="checkbox" id="graphicEQ" name="graphicEQ" value="geq" checked={(geq === 1) ? true : null} onChange={changeOutputOptions} />
-            <label htmlFor="graphicEQ" className={styles.text1}>Graphic EQ</label>
             <br/>
-            <input type="checkbox" id="parametricEQ" name="parametricEQ" value="peq" checked={(peq === 1) ? true : null} onChange={changeOutputOptions} />
-            <label htmlFor="parametricEQ" className={styles.text1}>Parametric EQ</label>
-            <br/>
-            <input type="checkbox" id="convolutionEQ" name="convolutionEQ" value="ceq" checked={(ceq === 1) ? true : null} onChange={changeOutputOptions} />
-            <label htmlFor="convolutionEQ" className={styles.text1}>Convolution EQ</label>
-            <br/>
-            <input type="checkbox" id="fixedEQ" name="fixedEQ" value="feq" checked={(feq === 1) ? true : null} onChange={changeOutputOptions}/>
-            <label htmlFor="fixedEQ" className={styles.text1}>Fixed Band EQ</label>
-            <br/>
+            <label htmlFor="graphicEQ" className={`${styles.text1} ${styles.switchLabel}`}>
+              <input type="checkbox" id="graphicEQ" className={styles.switchCheckbox} name="graphicEQ" value="geq" disabled="disabled" checked onChange={changeOutputOptions} />
+              <span className={`${styles.switchSlider} ${styles.switchSliderContent1}`}></span>
+            </label>
+            <br/><br/>
+            <label htmlFor="parametricEQ" className={`${styles.text1} ${styles.switchLabel}`}>
+              <input type="checkbox" id="parametricEQ" className={styles.switchCheckbox} name="parametricEQ" value="peq" checked={(peq === 1) ? true : null} onChange={changeOutputOptions} />
+              <span className={`${styles.switchSlider} ${styles.switchSliderContent2}`}></span>
+            </label>
+            <div className={(peq === 0 ? styles.hidden : `${styles.popupPanel} ${styles.addVMargin} `)}>
+              <span className={styles.text1}>Max filters</span>
+              <input type="range" min="1" max="64" defaultValue={maxFilters} step="1" id="max-filters" onChange={(event) => setMaxFilters(event.target.value)}/>
+              {maxFilters}
+            </div>
+            <br/><br/>
+            <label htmlFor="convolutionEQ" className={`${styles.text1} ${styles.switchLabel}`}>
+              <input type="checkbox" id="convolutionEQ" className={styles.switchCheckbox} name="convolutionEQ" value="ceq" checked={(ceq === 1) ? true : null} onChange={changeOutputOptions} />
+              <span className={`${styles.switchSlider} ${styles.switchSliderContent3}`}></span>
+            </label>
+            <div className={(ceq === 0 ? styles.hidden : `${styles.popupPanel} ${styles.addVMargin} `)}>
+              <span className={styles.text1}>Sampling rate</span>
+              <select name="sampling-rate" className={`${styles.dropdown} ${styles.text2}`} defaultValue={samplingRate} onChange={(event) => setSamplingRate(event.target.value)}>
+                <option value="44100">44100</option>
+                <option value="48000">48000</option>
+              </select>
+            </div>
+            <br/><br/>
+            <label htmlFor="fixedEQ" className={`${styles.text1} ${styles.switchLabel}`}>
+              <input type="checkbox" id="fixedEQ" className={styles.switchCheckbox} name="fixedEQ" value="feq" checked={(feq === 1) ? true : null} onChange={changeOutputOptions}/>
+              <span className={`${styles.switchSlider} ${styles.switchSliderContent4}`}></span>
+            </label>
+            <div className={(feq === 0 ? styles.hidden : `${styles.popupPanel} ${styles.addVMargin} `)}>
+              <span className={`${styles.text1} ${styles.block}`}>Frequency</span>
+              <input type="text" id="frequency" className={`${styles.textInput}`} defaultValue={frequency} onChange={(event) => setFrequency(event.target.value)}/>
+              <span className={`${styles.text1} ${styles.block}`}>Q</span>
+              <input type="text" id="freqQ" className={`${styles.textInput}`} defaultValue={freqQ} onChange={(event) => setFreqQ(event.target.value)}/>
+            </div>
+            <br/><br/>
           </div>
         </div>
       </div>
       <div className={styles.navigate}>
         <button className={`${styles.button} ${styles.floatLeft}`} onClick={() => props.changePage('ChooseTarget')}>Back</button>
-        <button className={`${styles.button} ${styles.floatRight}`} onClick={() => props.changePage('Customize')}>Continue</button>
+        <button className={`${styles.button} ${styles.floatRight}`} onClick={() => navNextPage('FinalPage')}>Continue</button>
       </div>
     </div>
   );

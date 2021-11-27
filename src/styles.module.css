@@ -1,6 +1,13 @@
 
 .hidden {
     visibility: hidden;
+    display: block;
+    height: 0px;
+    display: none;
+}
+
+.block {
+    display: block;
 }
 
 .header1L {
@@ -19,7 +26,7 @@
 }
 
 .header3 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 400;
 }
 
@@ -29,7 +36,6 @@
     top: 60px;
     margin-top: 20px;
     margin-bottom: 20px;
-    overflow: auto;
 }
 
 .pageContainer {
@@ -44,6 +50,17 @@
     margin-left: auto;
     margin-right: auto;
     width: fit-content;
+}
+
+.textInput {
+    outline: none !important;
+    display: block;
+    width: 300px;
+    height: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+    border-radius: 18px;
+    margin: 0;
 }
 
 .button {
@@ -65,10 +82,103 @@
     transition: 0.5s;
 }
 
+.switchLabel {
+    position: relative;
+    display: inline-block;
+    width: 170px;
+    height: 35px;
+}
+
+.switchCheckbox {
+    display: none;
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.switchSlider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #1e2124;
+    border: 3px solid #1e2124;
+    /*border: 3px solid #fafafa;*/
+    border-radius: 20px;
+    transition: 0.5s;
+}
+
+.switchSlider:hover {
+    /*box-shadow: 1px 1px 10px #aaaaaa inset;*/
+    border: 3px solid #fafafa;
+    background-color: #555555;
+    transition: 0.5s;
+}
+
+.switchCheckbox:checked + .switchSlider {
+    /*background-color: rgb(57, 117, 207);*/
+    background-color: #0075ff;
+    border: 3px solid #1e2124;
+}
+
+.switchCheckbox:checked + .switchSlider:hover {
+    border: 3px solid #fafafa;
+}
+
+.switchSlider::before {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0.5px;
+    background-color: #fafafa;
+    font-size: 0.95em;
+    color: #444444;
+    border-radius: 20px;
+    width: 130px;
+    text-align: center;
+    line-height: 1.7;
+    transition: 0.5s;
+}
+
+.switchSliderContent1::before {
+    content: "Graphic EQ";
+}
+.switchSliderContent2::before {
+    content: "Parametric EQ";
+}
+.switchSliderContent3::before {
+    content: "Convolution EQ";
+}
+.switchSliderContent4::before {
+    content: "Fixed Band EQ";
+}
+
+.switchCheckbox:checked + .switchSlider::before {
+    transform: translateX(34px);
+    transition: 0.5s;
+}
+
+.popupPanel {
+    display: block;
+    background-color: #1e2124;
+    border-radius: 15px;
+    padding: 20px 20px 20px 20px;
+    width: fit-content;
+}
+
+
 .text1 {
     font-size: 18px;
     font-weight: 400;
     line-height: 2.0;
+}
+
+.text1sp {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 2.0;
+    letter-spacing: 1px;
 }
 
 .text2 {
@@ -79,6 +189,15 @@
 
 .blueText {
     color: rgb(64, 179, 233);
+}
+
+.link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
 }
 
 .ulist {
@@ -105,7 +224,8 @@
 }
 
 .ulistItemSelected {
-    background-color: white;
+    padding-left: 14px;
+    border-left: 4px solid #dadada;
 }
 
 .dropdown {
@@ -113,6 +233,10 @@
     padding: 5px;
     border-radius: 10px;
     border: 2px solid #2F364000;
+}
+
+.dropdownItem {
+    
 }
 
 .imgGraph3x4 {
@@ -163,4 +287,10 @@
     display: block;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.addVMargin2 {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }

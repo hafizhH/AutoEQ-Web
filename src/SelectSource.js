@@ -1,33 +1,51 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styles from './styles.module.css';
 
-const source = ['headphonecom', 'innerfidelity', 'oratory1990', 'referenceaudioanalyzer', 'rtings'];
+const sampleSource = ['headphonecom', 'innerfidelity', 'oratory1990'];
 
 export default function SelectSource(props) {
-  const [selSource, setSelSource] = useState(0);
+  const [sourcelist, setSourcelist] = useState([]);
+  const [selSource, setSelSource] = useState('');
 
   useEffect (() => {
+    axios.get('http://localhost:8000/getDirSource')
+    .then((response) => {
+      if (response.status === 200)
+        setSourcelist(response.data.sourcelist);
+    }).catch((err) => {
+      console.log(err.message);
+      setSourcelist(sampleSource);
+    });
+
     const gselSource = sessionStorage.getItem('selSource');
-    if (gselSource !== null) setSelSource(Number.parseInt(gselSource));
+    if (gselSource !== null) setSelSource(gselSource);
   }, []);
 
   useEffect (() => {
-    sessionStorage.setItem('selSource', selSource.toString());
+    sessionStorage.setItem('selSource', selSource);
   }, [selSource]);
+
+  const navNextPage = (page) => {
+    if (sessionStorage.getItem('selSource') !== '')
+      props.changePage(page);
+    else
+      alert('Please select measurement source');
+  }
 
   return (
     <div id="select-source" className={styles.page}>
       <div className={`${styles.pageContainer}`}>
         <span className={`${styles.header2} ${styles.centerBlock}`}>Select Measurement Source</span>
         <ul className={`${styles.ulist}`}>
-          {source.map((name, index) => {
-            return <li key={index} className={`${styles.ulistItem} ${(index === selSource) ? styles.ullistItemSelected : ''}`} onClick={() => setSelSource(index)}>{name}</li>
+          {sourcelist.map((name, index) => {
+            return <li key={index} className={`${styles.ulistItem} ${(name === selSource ? styles.ulistItemSelected : '')}`} onClick={() => setSelSource(sourcelist[index])}>{name}</li>
           })}
         </ul>
       </div>
       <div className={styles.navigate}>
-        <button className={`${styles.button} ${styles.floatLeft}`} onClick={() => props.changePage('Home')}>Back</button>
-        <button className={`${styles.button} ${styles.floatRight}`} onClick={() => props.changePage('SelectType')}>Continue</button>
+        <button className={`${styles.button} ${styles.floatLeft}`} onClick={() => props.changePage('SelectMeasurement')}>Back</button>
+        <button className={`${styles.button} ${styles.floatRight}`} onClick={() => navNextPage('SelectType')}>Continue</button>
       </div>
     </div>
   );
