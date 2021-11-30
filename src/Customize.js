@@ -4,20 +4,21 @@ import styles from './styles.module.css';
 
 export default function Customize(props) {
   const [file, setFile] = useState('No file selected');
-  const [maxGain, setMaxGain] = useState(0.0);
+  const [maxGain, setMaxGain] = useState(6.0);
   const [bassBoost, setBassBoost] = useState(0.0);
   const [tilt, setTilt] = useState(0.0);
-  const [trebleMaxGain, setTrebleMaxGain] = useState(0.0);
+  const [trebleMaxGain, setTrebleMaxGain] = useState(6.0);
   const [trebleGainCoef, setTrebleGainCoef] = useState(0.0);
-  const [trebleTransFreq, setTrebleTransFreq] = useState(100);
+  const [trebleTransFreqStart, setTrebleTransFreqStart] = useState(6000);
+  const [trebleTransFreqEnd, setTrebleTransFreqEnd] = useState(8000);
   const [geq, setGeq] = useState(1);
   const [peq, setPeq] = useState(0);
   const [ceq, setCeq] = useState(0);
   const [feq, setFeq] = useState(0);
-  const [maxFilters, setMaxFilters] = useState(1);
-  const [samplingRate, setSamplingRate] = useState(44100);
-  const [frequency, setFrequency] = useState('31.25Hz, 62.5Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz.');
-  const [freqQ, setFreqQ] = useState('');
+  const [maxFilters, setMaxFilters] = useState(10);
+  const [samplingRate, setSamplingRate] = useState(48000);
+  const [frequency, setFrequency] = useState('31.25,62.5,125,250,500,1000,2000,4000,8000,16000');
+  const [freqQ, setFreqQ] = useState('1.41');
   const [requestStatus, setRequestStatus] = useState('');
 
   const changeOutputOptions = (event) => {
@@ -53,8 +54,11 @@ export default function Customize(props) {
     const gtrebleGainCoef = sessionStorage.getItem('trebleGainCoef');
     if (gtrebleGainCoef != null) setTrebleGainCoef(Number.parseFloat(gtrebleGainCoef));
 
-    const gtrebleTransFreq = sessionStorage.getItem('trebleTransFreq');
-    if (gtrebleTransFreq != null) setTrebleTransFreq(Number.parseInt(gtrebleTransFreq));
+    const gtrebleTransFreqStart = sessionStorage.getItem('trebleTransFreqStart');
+    if (gtrebleTransFreqStart != null) setTrebleTransFreqStart(Number.parseInt(gtrebleTransFreqStart));
+
+    const gtrebleTransFreqEnd = sessionStorage.getItem('trebleTransFreqEnd');
+    if (gtrebleTransFreqEnd != null) setTrebleTransFreqEnd(Number.parseInt(gtrebleTransFreqEnd));
 
     const ggeq = sessionStorage.getItem('geq');
     if (ggeq != null) setGeq(Number.parseInt(ggeq));
@@ -74,7 +78,12 @@ export default function Customize(props) {
     const gfreqQ = sessionStorage.getItem('freqQ');
     if (gfreqQ != null) setFreqQ(gfreqQ);
 
-    axios.get('http://localhost:8000/getCustomizePreviewGraph')
+    axios.post('http://localhost:8000/getCustomizePreviewGraph',{
+      skey: sessionStorage.getItem('skey'),
+      presetName: sessionStorage.getItem('presetName'),
+    },{
+      headers: {'X-CSRFToken': sessionStorage.getItem('csrftoken')}
+    })
     .then((response) => {
       if (response.status === 200)
         sessionStorage.setItem('previewGraphURL', response.data.imgurl);
@@ -90,7 +99,8 @@ export default function Customize(props) {
     sessionStorage.setItem('tilt', tilt.toString());
     sessionStorage.setItem('trebleMaxGain', trebleMaxGain.toString());
     sessionStorage.setItem('trebleGainCoef', trebleGainCoef.toString());
-    sessionStorage.setItem('trebleTransFreq', trebleTransFreq.toString());
+    sessionStorage.setItem('trebleTransFreqStart', trebleTransFreqStart.toString());
+    sessionStorage.setItem('trebleTransFreqStart', trebleTransFreqStart.toString());
     sessionStorage.setItem('geq', geq.toString());
     sessionStorage.setItem('peq', peq.toString());
     sessionStorage.setItem('ceq', ceq.toString());
@@ -101,29 +111,34 @@ export default function Customize(props) {
     sessionStorage.setItem('frequency', frequency);
     sessionStorage.setItem('freqQ', freqQ);
     console.log('Item saved');
-  }, [file, maxGain, bassBoost, tilt, trebleMaxGain, trebleGainCoef, trebleTransFreq, geq, peq, ceq, feq, maxFilters, samplingRate, frequency, freqQ]);
+  }, [file, maxGain, bassBoost, tilt, trebleMaxGain, trebleGainCoef, trebleTransFreqStart,trebleTransFreqEnd, geq, peq, ceq, feq, maxFilters, samplingRate, frequency, freqQ]);
 
   const navNextPage = (page) => {
     setRequestStatus('Uploading to server');
-      axios.post('http://localhost:8000/uploadClientData', 
+      axios.post('http://localhost:8000/submitcustomization', 
       {
         maxGain: maxGain,
         bassBoost: bassBoost,
         tilt: tilt,
         trebleMaxGain: trebleMaxGain,
         trebleGainCoef: trebleGainCoef,
-        trableTransFreq: trebleTransFreq,
+        trebleTransFreqStart: trebleTransFreqStart,
+        trebleTransFreqEnd: trebleTransFreqEnd,
         geq: 1,
         peq: peq,
         ceq: ceq,
         feq: feq,
         maxFilters: (peq === 1 ? maxFilters : -1),
         samplingRate: (ceq === 1 ? samplingRate : -1),
-        freqency: (feq === 1 ? frequency : ''),
+        frequency: (feq === 1 ? frequency : ''),
         freqQ: (feq === 1 ? freqQ : ''),
+        presetName:sessionStorage.getItem('presetName'),
+        skey:sessionStorage.getItem('skey'),
+      },{
+        headers: {'X-CSRFToken': sessionStorage.getItem('csrftoken')}
       }
       ).then((response) => {
-        if (response === 200) {
+        if (response.status === 200) {
           sessionStorage.setItem('finalGraphURL', response.data.imgurl);
           sessionStorage.setItem('downloadURL', response.data.downloadurl);
           setRequestStatus('Upload Success');
@@ -132,7 +147,6 @@ export default function Customize(props) {
       }).catch((err) => {
         console.log(err.message);
         setRequestStatus('Error occured while uploading to server');
-        props.changePage(page); //Untuk debugging, hapus saat build
       })
   }
 
@@ -165,9 +179,13 @@ export default function Customize(props) {
             <input type="range" min="-5.0" max="5.0" defaultValue={trebleGainCoef} step="0.1" id="treble-gain-coef" onChange={(event) => setTrebleGainCoef(event.target.value)}/>
             {trebleGainCoef}
             <br/>
-            <span className={styles.text1}>Treble Transition Frequencies</span>
-            <input type="range" min="20" max="20000" defaultValue={trebleTransFreq} step="10" id="treble-trans-freq" onChange={(event) => setTrebleTransFreq(event.target.value)}/>
-            {trebleTransFreq}
+            <span className={styles.text1}>Treble Transition Frequencies Start</span>
+            <input type="range" min="20" max="20000" defaultValue={trebleTransFreqStart} step="10" id="treble-trans-freqstart" onChange={(event) => setTrebleTransFreqStart(event.target.value)}/>
+            {trebleTransFreqStart}
+            <br/>
+            <span className={styles.text1}>Treble Transition Frequencies End</span>
+            <input type="range" min="20" max="20000" defaultValue={trebleTransFreqEnd} step="10" id="treble-trans-freqend" onChange={(event) => setTrebleTransFreqEnd(event.target.value)}/>
+            {trebleTransFreqEnd}
             <br/>
             <span className={styles.text1}>Sound Signature</span>
             <label htmlFor="soundSignature" className={`${styles.button} ${styles.addVMargin}`}>Upload CSV</label>

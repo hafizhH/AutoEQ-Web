@@ -1,7 +1,7 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import styles from './styles.module.css';
-
+import Cookies from 'js-cookie'
+import axios from 'axios';
 export default function Home(props) {
   const [presetName, setPresetName] = useState('');
 
@@ -12,6 +12,10 @@ export default function Home(props) {
 
   useEffect (() => {
     sessionStorage.setItem('presetName', presetName.toString());
+    sessionStorage.setItem('csrftoken',Cookies.get('csrftoken'))
+    axios.get('http://localhost:8000/getKey').then((response)=>{
+      sessionStorage.setItem('skey',response.data.skey);
+    })
   }, [presetName]);
 
   const navNextPage = (page) => {

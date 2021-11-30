@@ -15,15 +15,15 @@ export default function SelectModel(props) {
     .then((response) => {
       if (response.status === 200) {
         const selType = sessionStorage.getItem('selType');
-        if (selType === 0) setModels(response.data.earbud);
-        else if (selType === 1) setModels(response.data.inear);
-        else if (selType === 2) setModels(response.data.onear);
+        if (selType === 'earbud') setModels(response.data.earbud);
+        else if (selType === 'inear') setModels(response.data.inear);
+        else if (selType === 'onear') setModels(response.data.onear);
       }
     }).catch((err) => {
       console.log(err.message);
       setModels(sampleModels);
+      
     });
-
     const gselModel = sessionStorage.getItem('selModel');
     if (gselModel != null) setSelModel(gselModel);
   }, []);
@@ -42,12 +42,17 @@ export default function SelectModel(props) {
       {
         source: source,
         type: type,
-        model: gselModel
+        model: gselModel,
+        skey: sessionStorage.getItem('skey'),
+        presetName: sessionStorage.getItem('presetName')        
+      },{
+        headers: {'X-CSRFToken': sessionStorage.getItem('csrftoken')}
       }
       ).then((response) => {
-        if (response === 200) {
+        if (response.status === 200) {
           sessionStorage.setItem('measureGraphURL', response.data.imgurl);
           setUploadStatus('Upload Success');
+          console.log("choose success")
           props.changePage(page);
         }
       }).catch((err) => {

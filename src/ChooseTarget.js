@@ -27,7 +27,11 @@ export default function ChooseTarget(props) {
   const handleSelTargetChange = (event) => {
     axios.post('http://localhost:8000/uploadClientData',
     {
-      target: event.target.value
+      target: event.target.value,
+      presetName: sessionStorage.getItem('presetName'),
+      skey:sessionStorage.getItem('skey'),
+    },{
+      headers: {'X-CSRFToken': sessionStorage.getItem('csrftoken')}
     }
     ).then((response) => {
       if (response.status === 200) {
@@ -45,11 +49,13 @@ export default function ChooseTarget(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     let formData = new FormData(event.target);
+    formData.append('presetName', sessionStorage.getItem('presetName'));
+    formData.append('skey',sessionStorage.getItem('skey'));
     axios({
       method: 'post',
       url: 'http://localhost:8000/uploadCustomTarget',
       data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': 'multipart/form-data' , 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
     }).then((response) => {
       if (response.status === 200) {
         sessionStorage.setItem('selTarget', '');
@@ -68,7 +74,6 @@ export default function ChooseTarget(props) {
       props.changePage(page);
     else {
       alert('Please input target measurement');
-      props.changePage(page); //Untuk debugging, hapus saat build
     }
   }
 
@@ -77,7 +82,7 @@ export default function ChooseTarget(props) {
       <div className={styles.pageContainer}>
         <div className={`${styles.floatLeft} ${styles.addHMargin}`}>
           <img id="measure-graph" alt="measure-graph" src={sessionStorage.getItem('measureGraphURL')} className={styles.imgGraph3x4}/>
-          <span className={`${styles.header2} ${styles.centerBlock} ${styles.addVMargin}`}>Measure</span>
+          <span className={`${styles.header2} ${styles.centerBlock} ${styles.addVMargin}`}>Measurement</span>
         </div>
         <div className={`${styles.floatRight} ${styles.addHMargin}`}>
           <img id="target-graph" alt="target-graph" src={(sessionStorage.getItem('targetGraphURL') !== null ? sessionStorage.getItem('targetGraphURL') : '')} className={styles.imgGraph3x4}/>

@@ -5,7 +5,7 @@ import styles from './styles.module.css';
 export default function SelectMeasurement(props) {
   const [customCSVFileName, setCustomCSVFileName] = useState('No file selected');
   const [uploadStatus, setUploadStatus] = useState('');
-
+  
   const uploadChanged = (event) => {
     setCustomCSVFileName(event.target.files[0].name);
   }
@@ -14,16 +14,18 @@ export default function SelectMeasurement(props) {
     event.preventDefault();
     let formData = new FormData(event.target);
     formData.append('presetName', sessionStorage.getItem('presetName'));
+    formData.append('skey',sessionStorage.getItem('skey'));
     setUploadStatus('Uploading to server');
     axios({
       method: 'post',
       url: 'http://localhost:8000/uploadmeasurement',
       data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': 'multipart/form-data', 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
     }).then((response) => {
       if (response.status === 200) {
         sessionStorage.setItem('customCSVFileName', customCSVFileName);
         sessionStorage.setItem('measureGraphURL', response.data.imgurl);
+        console.log(response.data)
         props.changePage('ChooseTarget');
         setUploadStatus('Upload success');
       }
