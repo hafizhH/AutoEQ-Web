@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import chooseTarget, getCustomizePreviewGraph, getDirData, getDirSource, getKey, inituser, targetlist, updatedata, uploadClientData, uploadCustomTarget, uploadmeasurements
+from .views import chooseTarget, getCustomizePreviewGraph, getDirData, getDirSource, getKey, index, inituser, targetlist, updatedata, uploadClientData, uploadCustomTarget, uploadmeasurements
 
 urlpatterns=[
     path('getDirSource',getDirSource),
@@ -13,4 +13,5 @@ urlpatterns=[
     path('getCustomizePreviewGraph',getCustomizePreviewGraph),
     path('submitcustomization',uploadClientData),
     path('uploadCustomTarget',uploadCustomTarget),
+    path('',index)
 ]
