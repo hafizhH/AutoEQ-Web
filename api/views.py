@@ -126,19 +126,31 @@ def uploadClientData(request):
         treblegaincoef=a['trebleGainCoef']
         trebleTransFreqStart=a['trebleTransFreqStart']
         trebleTransFreqEnd=a['trebleTransFreqEnd']
+
+        
         #Parametric EQ
         peq=bool(a['peq'])
-        maxfilter=a['maxFilters']
+        maxfilter=int(a['maxFilters'])
+
+
         #Convolution EQ
         ceq=bool(a['ceq'])
-        sr=[a['samplingRate']]
+
+        sr=[int(a['samplingRate'])]
+
+
         #Fixed Band EQ
         feq=bool(a['feq'])
+
         frequency=a['frequency']
-        print(frequency)
         frequency=frequency.split(',')
+        frequency=[float(i) for i in frequency]
+
         freqQ=a['freqQ']
-        #endnew
+        freqQ=freqQ.split(',')
+        freqQ=[float(i) for i in freqQ]
+
+
         path=os.path.join(hasil_DIR,skey,presetname)
         eq(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True,parametric_eq=peq,fixed_band_eq=feq,fc=frequency,q=freqQ,max_filters=maxfilter,convolution_eq=ceq,fs=sr)
         sourcepng=os.path.join(path,'output',presetname+'.png')
