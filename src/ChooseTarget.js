@@ -7,9 +7,11 @@ export default function ChooseTarget(props) {
   const [selTarget, setSelTarget] = useState('');
   const [targetFileName, setTargetFileName] = useState('No file selected');
   const [requestStatus, setRequestStatus] = useState('');
+  const [targetGraphURL, setTargetGraphURL] = useState('');
+  const [measureGraphURL, setMeasureGraphURL] = useState('');
 
   useEffect (() => {
-    document.getElementById('measure-graph').src = sessionStorage.getItem('measureGraphURL');
+    setMeasureGraphURL(sessionStorage.getItem('measureGraphURL'));
 
     const gselTarget = sessionStorage.getItem('selTarget');
     if (gselTarget != null) setSelTarget(gselTarget);
@@ -38,7 +40,7 @@ export default function ChooseTarget(props) {
         sessionStorage.setItem('selTarget', event.target.value);
         sessionStorage.setItem('targetFileName', 'No file selected');
         sessionStorage.setItem('targetGraphURL', response.data.imgurl);
-        document.getElementById('target-graph').src = sessionStorage.getItem('targetGraphURL');
+        setTargetGraphURL(response.data.imgurl);
         setSelTarget(event.target.value);
         setTargetFileName('No file selected');
         setRequestStatus('Success');
@@ -49,7 +51,6 @@ export default function ChooseTarget(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     let formData = new FormData(event.target);
-    formData.append('presetName', sessionStorage.getItem('presetName'));
     formData.append('skey',sessionStorage.getItem('skey'));
     axios({
       method: 'post',
@@ -61,7 +62,7 @@ export default function ChooseTarget(props) {
         sessionStorage.setItem('selTarget', '');
         sessionStorage.setItem('targetFileName', event.target.files[0].name);
         sessionStorage.setItem('targetGraphURL', response.data.imgurl);
-        document.getElementById('target-graph').src = sessionStorage.getItem('targetGraphURL');
+        setTargetGraphURL(response.data.imgurl);
         setTargetFileName(event.target.files[0].name);
         setSelTarget('');
         setRequestStatus('Success');
@@ -81,13 +82,13 @@ export default function ChooseTarget(props) {
     <div id="choose-target" className={styles.page}>
       <div className={styles.pageContainer}>
         <div className={`${styles.floatLeft} ${styles.addHMargin}`}>
-          <img id="measure-graph" alt="measure-graph" src={sessionStorage.getItem('measureGraphURL')} className={styles.imgGraph3x4}/>
+          <img id="measure-graph" alt="measure-graph" src={measureGraphURL} className={styles.imgGraph3x4}/>
           <span className={`${styles.header2} ${styles.centerBlock} ${styles.addVMargin}`}>Measurement</span>
         </div>
         <div className={`${styles.floatRight} ${styles.addHMargin}`}>
-          <img id="target-graph" alt="target-graph" src={(sessionStorage.getItem('targetGraphURL') !== null ? sessionStorage.getItem('targetGraphURL') : '')} className={styles.imgGraph3x4}/>
+          <img id="target-graph" alt="target-graph" src={targetGraphURL} className={styles.imgGraph3x4}/>
           <span className={`${styles.header2} ${styles.centerBlock} ${styles.addVMargin}`}>Target</span>
-          <select name="measure" className={`${styles.dropdown} ${styles.text2}`} defaultValue={(selTarget === '' ? 'Select Target' : selTarget)} onChange={handleSelTargetChange}>
+          <select name="measure" className={`${styles.dropdown} ${styles.text2}`} defaultValue={selTarget} onChange={handleSelTargetChange}>
             {targetList.map((name, index) => {
               return <option key={index} className={`${styles.text2}`} value={name}>{name}</option>
             })}

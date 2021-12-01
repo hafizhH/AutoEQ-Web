@@ -20,6 +20,7 @@ export default function Customize(props) {
   const [frequency, setFrequency] = useState('31.25,62.5,125,250,500,1000,2000,4000,8000,16000');
   const [freqQ, setFreqQ] = useState('1.41');
   const [requestStatus, setRequestStatus] = useState('');
+  const [previewGraphURL, setPreviewGraphURL] = useState('');
 
   const changeOutputOptions = (event) => {
     if (event.target.checked === true) {
@@ -87,6 +88,7 @@ export default function Customize(props) {
     .then((response) => {
       if (response.status === 200)
         sessionStorage.setItem('previewGraphURL', response.data.imgurl);
+        setPreviewGraphURL(response.data.imgurl);
     }).catch((err) => console.log(err.message));
 
     console.log('Item retrieved');
@@ -112,6 +114,26 @@ export default function Customize(props) {
     sessionStorage.setItem('freqQ', freqQ);
     console.log('Item saved');
   }, [file, maxGain, bassBoost, tilt, trebleMaxGain, trebleGainCoef, trebleTransFreqStart,trebleTransFreqEnd, geq, peq, ceq, feq, maxFilters, samplingRate, frequency, freqQ]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    let formData = new FormData(event.target);
+    formData.append('skey',sessionStorage.getItem('skey'));
+    setRequestStatus('Uploading to server');
+    axios({
+      method: 'post',
+      url: 'http://localhost:8000/uploadsoundsig',
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data', 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
+    }).then((response) => {
+      if (response.status === 200) {
+        setRequestStatus('Upload success');
+      }
+    }).catch((e) => {
+      console.log(e.message);
+      setRequestStatus('Error occured while uploading to server');
+    });
+  }
 
   const navNextPage = (page) => {
     setRequestStatus('Uploading to server');
@@ -147,6 +169,7 @@ export default function Customize(props) {
       }).catch((err) => {
         console.log(err.message);
         setRequestStatus('Error occured while uploading to server');
+        //props.changePage(page);   //Hapus saat build
       })
   }
 
@@ -154,7 +177,7 @@ export default function Customize(props) {
     <div id="customize" className={styles.page}>
       <div className={styles.pageContainer}>
         <div className={`${styles.floatLeft} ${styles.addHMargin}`}>
-          <img id="preview-graph" src={(sessionStorage.getItem('previewGraphURL') !== null ? sessionStorage.getItem('previewGraphURL') : '')} alt="preview-graph" className={styles.imgGraph2x3}/>
+          <img id="preview-graph" src={previewGraphURL} alt="preview-graph" className={styles.imgGraph2x3}/>
         </div>
         <div className={`${styles.floatRight} ${styles.addHMargin}`}>
           <div className={styles.addVMargin}>
@@ -188,9 +211,12 @@ export default function Customize(props) {
             {trebleTransFreqEnd}
             <br/>
             <span className={styles.text1}>Sound Signature</span>
-            <label htmlFor="soundSignature" className={`${styles.button} ${styles.addVMargin}`}>Upload CSV</label>
-            <input type="file" id="soundSignature" className={styles.hidden} name="soundSignature" accept=".csv" onChange={(event) => setFile(event.target.files[0].name)} />
-            <span className={`${styles.text1} ${styles.addVMargin}`}>{file}</span>
+            <form enctype="multipart/form-data" onSubmit={handleSubmit} className={styles.centerBlock}>
+              <label htmlFor="soundSignature" className={`${styles.button} ${styles.addVMargin}`}>Upload CSV</label>
+              <input type="file" id="soundSignature" className={styles.hidden} name="soundSignature" accept=".csv" onChange={(event) => setFile(event.target.files[0].name)} />
+              <span className={`${styles.text1} ${styles.addVMargin}`}>{file}</span>
+              <button className={`${styles.button} ${styles.centerBlock} ${(file === 'No file selected' ? styles.hidden : '')}`}>Confirm</button>
+            </form>
             <br/>
             <br/>
           </div>
