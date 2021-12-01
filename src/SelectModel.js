@@ -58,7 +58,7 @@ export default function SelectModel(props) {
       }).catch((err) => {
         console.log(err.message);
         setUploadStatus('Error occured while uploading to server');
-        props.changePage(page); //Hapus saat build
+        //props.changePage(page); //Hapus saat build
       })
     }
     else

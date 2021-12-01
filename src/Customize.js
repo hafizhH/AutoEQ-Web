@@ -169,7 +169,7 @@ export default function Customize(props) {
       }).catch((err) => {
         console.log(err.message);
         setRequestStatus('Error occured while uploading to server');
-        props.changePage(page);
+        //props.changePage(page);   //Hapus saat build
       })
   }
 
