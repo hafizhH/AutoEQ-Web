@@ -13,4 +13,5 @@ urlpatterns=[
     path('getCustomizePreviewGraph',getCustomizePreviewGraph),
     path('submitcustomization',uploadClientData),
     path('uploadCustomTarget',uploadCustomTarget),
+    #path('',index)
 ]

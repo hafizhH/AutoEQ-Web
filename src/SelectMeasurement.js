@@ -31,7 +31,6 @@ export default function SelectMeasurement(props) {
       }
     }).catch((e) => {
       console.log(e.message);
-      sessionStorage.setItem('imgurl', '/');
       setUploadStatus('Error occured while uploading to server');
     });
   }
