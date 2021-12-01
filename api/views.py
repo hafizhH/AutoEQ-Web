@@ -216,3 +216,9 @@ def targetlist(request):
     }
     data=json.dumps(data)
     return HttpResponse(data)
+
+
+#index
+
+def index(request):
+    return render(request,'index.html')
