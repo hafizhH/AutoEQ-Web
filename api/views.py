@@ -138,9 +138,7 @@ def uploadClientData(request):
 
         #Parametric EQ
         peq=bool(a['peq'])
-        maxfilter=int(a['maxFilters'])
-        print(peq)
-        print(maxfilter)
+        maxfilter=[int(a['maxFilters']),0]
 
         #Convolution EQ
         ceq=bool(a['ceq'])
@@ -167,7 +165,9 @@ def uploadClientData(request):
         else:
             freqQ=None
 
-
+        if(peq and not feq and not ceq):
+            ceq=True
+            sr=[48000]
         
         eq.batch_processing(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True,parametric_eq=peq,fixed_band_eq=feq,fc=frequency,q=freqQ,max_filters=maxfilter,convolution_eq=ceq,fs=sr,tilt=tilt,max_gain=maxgain,bass_boost_gain=bassboost,treble_gain_k=treblegaincoef,treble_f_lower=trebleTransFreqStart,treble_f_upper=trebleTransFreqEnd,sound_signature=soundsig)
 
