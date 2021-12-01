@@ -119,6 +119,7 @@ export default function Customize(props) {
     event.preventDefault();
     let formData = new FormData(event.target);
     formData.append('skey',sessionStorage.getItem('skey'));
+    formData.append('presetName', sessionStorage.getItem('presetName'));
     setRequestStatus('Uploading to server');
     axios({
       method: 'post',

@@ -6,7 +6,7 @@ from .bikin import makeimg
 import os,json,csv,shutil
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .autoeq import batch_processing as eq
+import autoeq as eq
 
 from AutoEQ_Web.settings import BASE_DIR
 
@@ -86,7 +86,7 @@ def chooseTarget(request):
         sourcefile=os.path.join(BASE_DIR,'autoeqmeas','compensation',target)
         destfile=os.path.join(hasil_DIR,skey,presetname,'target.csv')
         shutil.copy(sourcefile,destfile)
-        imgname=skey+'_'+presetname+'_target.png'
+        imgname=skey+'_'+presetname+'_'+target+'.png'
         outpath=os.path.join(BASE_DIR,'MEDIA',imgname)
         makeimg(destfile,outpath,target)
         res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
@@ -102,7 +102,7 @@ def getCustomizePreviewGraph(request):
         skey=a['skey']
         presetname=a['presetName']
         path=os.path.join(hasil_DIR,skey,presetname)
-        eq(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True)
+        eq.batch_processing(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True)
         sourcepng=os.path.join(path,'output',presetname+'.png')
         imgname=skey+'_'+presetname+'_preview.png'
         outpng=os.path.join(BASE_DIR,'MEDIA',imgname)
@@ -119,42 +119,61 @@ def uploadClientData(request):
         a=json.loads(request.body)
         skey=a['skey']
         presetname=a['presetName']
-        maxgain=a['maxGain']
-        bassboost=a['bassBoost']
-        tilt=a['tilt']
-        treblemaxgain=a['trebleMaxGain']
-        treblegaincoef=a['trebleGainCoef']
-        trebleTransFreqStart=a['trebleTransFreqStart']
-        trebleTransFreqEnd=a['trebleTransFreqEnd']
+        maxgain=float(a['maxGain'])
+        bassboost=float(a['bassBoost'])
+        tilt=float(a['tilt'])
+        treblemaxgain=float(a['trebleMaxGain'])
+        treblegaincoef=float(a['trebleGainCoef'])
+        trebleTransFreqStart=float(a['trebleTransFreqStart'])
+        trebleTransFreqEnd=float(a['trebleTransFreqEnd'])
 
-        
+        path=os.path.join(hasil_DIR,skey,presetname)
+
+        #Check if soundsig exists
+        soundsig=None
+        soundsigpath=os.path.join(path,'soundsig.csv')
+        if os.path.isfile(soundsigpath):
+            soundsig=soundsigpath
+
+
         #Parametric EQ
         peq=bool(a['peq'])
         maxfilter=int(a['maxFilters'])
-
+        print(peq)
+        print(maxfilter)
 
         #Convolution EQ
         ceq=bool(a['ceq'])
-
-        sr=[int(a['samplingRate'])]
-
+        sr=a['samplingRate']
+        if sr != '':    
+            sr=[int(a['samplingRate'])]
+        else:
+            sr=None
 
         #Fixed Band EQ
         feq=bool(a['feq'])
 
         frequency=a['frequency']
         frequency=frequency.split(',')
-        frequency=[float(i) for i in frequency]
+        if frequency[0]!='':
+            frequency=[float(i) for i in frequency]
+        else:
+            frequency=None
 
         freqQ=a['freqQ']
         freqQ=freqQ.split(',')
-        freqQ=[float(i) for i in freqQ]
+        if freqQ[0]!='':
+            freqQ=[float(i) for i in freqQ]
+        else:
+            freqQ=None
 
 
-        path=os.path.join(hasil_DIR,skey,presetname)
-        eq(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True,parametric_eq=peq,fixed_band_eq=feq,fc=frequency,q=freqQ,max_filters=maxfilter,convolution_eq=ceq,fs=sr)
+        
+        eq.batch_processing(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True,parametric_eq=peq,fixed_band_eq=feq,fc=frequency,q=freqQ,max_filters=maxfilter,convolution_eq=ceq,fs=sr,tilt=tilt,max_gain=maxgain,bass_boost_gain=bassboost,treble_gain_k=treblegaincoef,treble_f_lower=trebleTransFreqStart,treble_f_upper=trebleTransFreqEnd,sound_signature=soundsig)
+
+
         sourcepng=os.path.join(path,'output',presetname+'.png')
-        imgname=skey+'_'+presetname+'_preview.png'
+        imgname=skey+'_'+presetname+'_final.png'
         outpng=os.path.join(BASE_DIR,'MEDIA',imgname)
         shutil.copy(sourcepng,outpng)
         
@@ -187,6 +206,22 @@ def uploadCustomTarget(request):
         res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
+    else:
+        return HttpResponseBadRequest
+
+@csrf_exempt
+def uploadsoundsig(request):
+    if(request.method=="POST"):
+        presetname=request.POST.get('presetName')
+        skey=request.POST.get('skey')
+        f=request.FILES.get('soundSignature')
+        path=os.path.join(hasil_DIR,skey,presetname)
+        csvpath=os.path.join(path,'soundsig.csv')
+        with open(csvpath,'wb+') as file:
+            for i in f.chunks():
+                file.write(i)
+        file.close()
+        return HttpResponse("")
     else:
         return HttpResponseBadRequest
 

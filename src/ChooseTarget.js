@@ -52,6 +52,7 @@ export default function ChooseTarget(props) {
     event.preventDefault();
     let formData = new FormData(event.target);
     formData.append('skey',sessionStorage.getItem('skey'));
+    formData.append('presetName', sessionStorage.getItem('presetName'));
     axios({
       method: 'post',
       url: 'http://localhost:8000/uploadCustomTarget',
