@@ -8,14 +8,14 @@ export default function Customize(props) {
   const [bassBoost, setBassBoost] = useState(0.0);
   const [tilt, setTilt] = useState(0.0);
   const [trebleMaxGain, setTrebleMaxGain] = useState(6.0);
-  const [trebleGainCoef, setTrebleGainCoef] = useState(0.0);
+  const [trebleGainCoef, setTrebleGainCoef] = useState(1.0);
   const [trebleTransFreqStart, setTrebleTransFreqStart] = useState(6000);
   const [trebleTransFreqEnd, setTrebleTransFreqEnd] = useState(8000);
   const [geq, setGeq] = useState(1);
   const [peq, setPeq] = useState(0);
   const [ceq, setCeq] = useState(0);
   const [feq, setFeq] = useState(0);
-  const [maxFilters, setMaxFilters] = useState(10);
+  const [maxFilters, setMaxFilters] = useState('5+5');
   const [samplingRate, setSamplingRate] = useState(48000);
   const [frequency, setFrequency] = useState('31.25,62.5,125,250,500,1000,2000,4000,8000,16000');
   const [freqQ, setFreqQ] = useState('1.41');
@@ -71,7 +71,7 @@ export default function Customize(props) {
     if (gfeq != null) setFeq(Number.parseInt(gfeq));
 
     const gmaxFilters = sessionStorage.getItem('maxFilters');
-    if (gmaxFilters != null) setMaxFilters(Number.parseInt(gmaxFilters));
+    if (gmaxFilters != null) setMaxFilters(gmaxFilters);
     const gsamplingRate = sessionStorage.getItem('samplingRate');
     if (gsamplingRate != null) setSamplingRate(Number.parseInt(gsamplingRate));
     const gfrequency = sessionStorage.getItem('frequency');
@@ -79,7 +79,7 @@ export default function Customize(props) {
     const gfreqQ = sessionStorage.getItem('freqQ');
     if (gfreqQ != null) setFreqQ(gfreqQ);
 
-    axios.post('http://localhost:8000/getCustomizePreviewGraph',{
+    axios.post('getCustomizePreviewGraph',{
       skey: sessionStorage.getItem('skey'),
       presetName: sessionStorage.getItem('presetName'),
     },{
@@ -123,7 +123,7 @@ export default function Customize(props) {
     setRequestStatus('Uploading to server');
     axios({
       method: 'post',
-      url: 'http://localhost:8000/uploadsoundsig',
+      url: 'uploadsoundsig',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data', 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
     }).then((response) => {
@@ -138,7 +138,7 @@ export default function Customize(props) {
 
   const navNextPage = (page) => {
     setRequestStatus('Uploading to server');
-      axios.post('http://localhost:8000/submitcustomization', 
+      axios.post('submitcustomization', 
       {
         maxGain: maxGain,
         bassBoost: bassBoost,
@@ -217,10 +217,10 @@ export default function Customize(props) {
             <span className={styles.text1}>Treble Gain Coefficient</span>
             <input type="number" id="treble-gain-coef" className={`${styles.textInput2}`} min="-5.0" max="5.0" step="0.1" defaultValue={trebleGainCoef} onChange={(event) => setTrebleGainCoef(clampInputValue(event, -5.0, 5.0, true))}/>
             <br/>
-            <span className={styles.text1}>Treble Transition Frequencies Start</span>
+            <span className={styles.text1}>Treble Transition Frequencies Start (Hz)</span>
             <input type="number" id="treble-trans-freqstart" className={`${styles.textInput2}`} min="20" max="20000" step="10" defaultValue={trebleTransFreqStart} onChange={(event) => setTrebleTransFreqStart(clampInputValue(event, 20, 20000, false))}/>
             <br/>
-            <span className={styles.text1}>Treble Transition Frequencies End</span>
+            <span className={styles.text1}>Treble Transition Frequencies End (Hz)</span>
             <input type="number" id="treble-trans-freqend" className={`${styles.textInput2}`} min="20" max="20000" step="10" defaultValue={trebleTransFreqEnd} onChange={(event) => setTrebleTransFreqEnd(clampInputValue(event, 20, 20000, false))}/>
             <br/>
             <span className={styles.text1}>Sound Signature</span>
@@ -250,7 +250,7 @@ export default function Customize(props) {
             </label>
             <div className={(peq === 0 ? styles.hidden : `${styles.popupPanel} ${styles.addVMargin} `)}>
               <span className={styles.text1}>Max filters</span>
-              <input type="number" id="max-filters" className={`${styles.textInput2}`} min="1" max="64" step="1" defaultValue={maxFilters} onChange={(event) => setMaxFilters(clampInputValue(event, 1, 64, false))}/>
+              <input type="text" id="max-filters" className={`${styles.textInput}`} min="1" max="64" step="1" defaultValue={maxFilters} onChange={(event) => setMaxFilters(event.target.value)}/>
             </div>
             <br/><br/>
             <label htmlFor="convolutionEQ" className={`${styles.text1} ${styles.switchLabel}`}>

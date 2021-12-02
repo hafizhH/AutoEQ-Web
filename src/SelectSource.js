@@ -9,7 +9,7 @@ export default function SelectSource(props) {
   const [selSource, setSelSource] = useState('');
 
   useEffect (() => {
-    axios.get('http://localhost:8000/getDirSource')
+    axios.get('getDirSource')
     .then((response) => {
       if (response.status === 200)
         setSourcelist(response.data.sourcelist);

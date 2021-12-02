@@ -7,7 +7,7 @@ export default function ChooseTarget(props) {
   const [selTarget, setSelTarget] = useState(' ');
   const [targetFileName, setTargetFileName] = useState('No file selected');
   const [requestStatus, setRequestStatus] = useState('');
-  const [targetGraphURL, setTargetGraphURL] = useState('');
+  const [targetGraphURL, setTargetGraphURL] = useState("MEDIA/default.png");
   const [measureGraphURL, setMeasureGraphURL] = useState('');
 
   useEffect (() => {
@@ -19,7 +19,7 @@ export default function ChooseTarget(props) {
     const gTargetFileName = sessionStorage.getItem('targetFileName');
     if (gTargetFileName != null) setTargetFileName(gTargetFileName);
 
-    axios.get('http://localhost:8000/targetList')
+    axios.get('targetList')
     .then((response) => {
       if (response.status === 200) {
         setTargetList([' ', ...response.data.targetList]);
@@ -34,7 +34,7 @@ export default function ChooseTarget(props) {
       setRequestStatus('');
       return;
     }
-    axios.post('http://localhost:8000/uploadClientData',
+    axios.post('uploadClientData',
     {
       target: event.target.value,
       presetName: sessionStorage.getItem('presetName'),
@@ -62,7 +62,7 @@ export default function ChooseTarget(props) {
     formData.append('presetName', sessionStorage.getItem('presetName'));
     axios({
       method: 'post',
-      url: 'http://localhost:8000/uploadCustomTarget',
+      url: 'uploadCustomTarget',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' , 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
     }).then((response) => {

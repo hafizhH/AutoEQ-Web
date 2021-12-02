@@ -21,7 +21,6 @@ def batch_processing(input_dir=None, output_dir=None, new_only=False, standardiz
                      treble_f_lower=DEFAULT_TREBLE_F_LOWER, treble_f_upper=DEFAULT_TREBLE_F_UPPER,
                      treble_gain_k=DEFAULT_TREBLE_GAIN_K, show_plot=False):
     """Parses files in input directory and produces equalization results in output directory."""
-    print(max_filters)
     start_time = time()
 
     if convolution_eq and not equalize:

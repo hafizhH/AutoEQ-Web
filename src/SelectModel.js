@@ -11,7 +11,7 @@ export default function SelectModel(props) {
 
   useEffect (() => {
     const selSource = sessionStorage.getItem('selSource');
-    axios.get('http://localhost:8000/getDirData/' + selSource)
+    axios.get('getDirData/' + selSource)
     .then((response) => {
       if (response.status === 200) {
         const selType = sessionStorage.getItem('selType');
@@ -38,7 +38,7 @@ export default function SelectModel(props) {
     const gselModel = sessionStorage.getItem('selModel');
     if (gselModel !== '') {
       setUploadStatus('Uploading to server');
-      axios.post('http://localhost:8000/updateData', 
+      axios.post('updateData', 
       {
         source: source,
         type: type,

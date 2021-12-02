@@ -13,7 +13,7 @@ export default function Home(props) {
   useEffect (() => {
     sessionStorage.setItem('presetName', presetName.toString());
     sessionStorage.setItem('csrftoken',Cookies.get('csrftoken'))
-    axios.get('http://localhost:8000/getKey').then((response)=>{
+    axios.get('getKey').then((response)=>{
       sessionStorage.setItem('skey',response.data.skey);
     })
   }, [presetName]);

@@ -18,7 +18,7 @@ export default function SelectMeasurement(props) {
     setUploadStatus('Uploading to server');
     axios({
       method: 'post',
-      url: 'http://localhost:8000/uploadmeasurement',
+      url: 'uploadmeasurement',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data', 'X-CSRFToken': sessionStorage.getItem('csrftoken') },
     }).then((response) => {

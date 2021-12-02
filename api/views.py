@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from .forms import UploadMeasurement
 from .bikin import makeimg
 import os,json,csv,shutil
-from django.http import JsonResponse
+from django.http import FileResponse
 from django.views.decorators.csrf import csrf_exempt
 import autoeq as eq
 
@@ -47,7 +47,7 @@ def uploadmeasurements(request):
         imgname=skey+'_'+presetname+'_input.png'
         outpath=os.path.join(BASE_DIR,'MEDIA',imgname)
         makeimg(csvpath,outpath,presetname)
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
+        res={'imgurl':'MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -70,7 +70,7 @@ def updatedata(request):
         imgname=skey+'_'+presetname+'_input.png'
         outpath=os.path.join(BASE_DIR,'MEDIA',imgname)
         makeimg(csvpath,outpath,presetname)
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
+        res={'imgurl':'MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -89,7 +89,7 @@ def chooseTarget(request):
         imgname=skey+'_'+presetname+'_'+target+'.png'
         outpath=os.path.join(BASE_DIR,'MEDIA',imgname)
         makeimg(destfile,outpath,target)
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
+        res={'imgurl':'MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -107,7 +107,7 @@ def getCustomizePreviewGraph(request):
         imgname=skey+'_'+presetname+'_preview.png'
         outpng=os.path.join(BASE_DIR,'MEDIA',imgname)
         shutil.copy(sourcepng,outpng)
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
+        res={'imgurl':'MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -138,37 +138,42 @@ def uploadClientData(request):
 
         #Parametric EQ
         peq=bool(a['peq'])
-        maxfilter=[int(a['maxFilters']),0]
+        if a['maxFilters']!=-1:
+            if '+' in a['maxFilters']:
+                maxfilter=a['maxFilters'].split('+')
+                maxfilter=[int(i) for i in maxfilter]
+            else:
+                maxfilter=int(a['maxFilters'])
+        else:
+            maxfilter=None
 
         #Convolution EQ
         ceq=bool(a['ceq'])
-        sr=a['samplingRate']
-        if sr != '':    
+        if a['samplingRate']!=-1:
             sr=[int(a['samplingRate'])]
         else:
-            sr=None
+            sr=[48000]
 
         #Fixed Band EQ
         feq=bool(a['feq'])
 
         frequency=a['frequency']
-        frequency=frequency.split(',')
-        if frequency[0]!='':
-            frequency=[float(i) for i in frequency]
+        if frequency!='':
+            if ',' in frequency:
+                frequency=frequency.split(',')
+                frequency=[float(i) for i in frequency]
+            else:
+                frequency=float(frequency)
         else:
             frequency=None
 
         freqQ=a['freqQ']
-        freqQ=freqQ.split(',')
-        if freqQ[0]!='':
+        if freqQ!='':
+            freqQ=freqQ.split(',')
             freqQ=[float(i) for i in freqQ]
         else:
             freqQ=None
 
-        if(peq and not feq and not ceq):
-            ceq=True
-            sr=[48000]
-        
         eq.batch_processing(input_dir=os.path.join(path,presetname),output_dir=os.path.join(path,'output'),compensation=os.path.join(path,'target.csv'),equalize=True,parametric_eq=peq,fixed_band_eq=feq,fc=frequency,q=freqQ,max_filters=maxfilter,convolution_eq=ceq,fs=sr,tilt=tilt,max_gain=maxgain,bass_boost_gain=bassboost,treble_gain_k=treblegaincoef,treble_f_lower=trebleTransFreqStart,treble_f_upper=trebleTransFreqEnd,sound_signature=soundsig)
 
 
@@ -182,7 +187,11 @@ def uploadClientData(request):
         output_filename=os.path.join(outputfolder,presetname)
         shutil.make_archive(output_filename, 'zip', os.path.join(path,'output'))
 
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname,'downloadurl':'http://localhost:8000/MEDIA/'+skey+'/'+presetname+'.zip'}
+        shutil.rmtree(os.path.join(hasil_DIR,skey,presetname))
+        for i in os.listdir(os.path.join(BASE_DIR,'MEDIA')):
+            if i!=imgname and '.png' in i and skey in i and presetname in i:
+                os.remove(os.path.join(BASE_DIR,'MEDIA',i))
+        res={'imgurl':'MEDIA/'+imgname,'downloadurl':'MEDIA/'+skey+'/'+presetname+'.zip'}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -203,7 +212,7 @@ def uploadCustomTarget(request):
         imgname=skey+'_'+presetname+'_target.png'
         outpath=os.path.join(BASE_DIR,'MEDIA',imgname)
         makeimg(csvpath,outpath,'Custom Target')
-        res={'imgurl':'http://localhost:8000/MEDIA/'+imgname}
+        res={'imgurl':'MEDIA/'+imgname}
         res=json.dumps(res)
         return HttpResponse(res)
     else:
@@ -230,11 +239,14 @@ def uploadsoundsig(request):
 
 def getDirSource(request):
     path=os.path.join(BASE_DIR,'autoeqmeas','measurements')
+    a=[]
+    for i in os.listdir(path):
+        if i!='crinacle' and i!='referenceaudioanalyzer':
+            a.append(i)
     data={
-        'sourcelist':[i for i in os.listdir(path)]
+        'sourcelist':a
     }
     data=json.dumps(data)
-    print(data)
     return HttpResponse(data)
 
 def getDirData(request,source):
@@ -269,3 +281,28 @@ def targetlist(request):
 
 def index(request):
     return render(request,'index.html')
+
+
+#media
+
+def media(request,medianame):
+    imagepath=os.path.join(BASE_DIR,'MEDIA',medianame)
+    image_data=open(imagepath,'rb').read()
+    return HttpResponse(image_data,content_type='image/png')
+
+def mediazip(request,skey,name):
+    filepath=os.path.join(BASE_DIR,'MEDIA',skey,name)
+    file_data=open(filepath,'rb')
+    return FileResponse(file_data)
+
+def staticfiles(request,staticfiles):
+    path=os.path.join(BASE_DIR,'build','static')
+    if '/' in staticfiles:
+        staticfiles=staticfiles.split('/')
+        for i in staticfiles:
+            path=os.path.join(path,i)
+    file_data=open(path,'rb').read()
+    if '.js' in path:
+        return HttpResponse(file_data,content_type='application/x-javascript')
+    elif '.css' in path:
+        return HttpResponse(file_data,content_type='text/css')

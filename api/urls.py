@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import chooseTarget, getCustomizePreviewGraph, getDirData, getDirSource, getKey, index, inituser, targetlist, updatedata, uploadClientData, uploadCustomTarget, uploadmeasurements, uploadsoundsig
+from .views import chooseTarget, getCustomizePreviewGraph, getDirData, getDirSource, getKey, index, inituser, media, mediazip, staticfiles, targetlist, updatedata, uploadClientData, uploadCustomTarget, uploadmeasurements, uploadsoundsig
 
 urlpatterns=[
     path('getDirSource',getDirSource),
@@ -14,5 +14,7 @@ urlpatterns=[
     path('submitcustomization',uploadClientData),
     path('uploadCustomTarget',uploadCustomTarget),
     path('uploadsoundsig',uploadsoundsig),
-    #path('',index)
+    path('MEDIA/<str:medianame>',media),
+    path('MEDIA/<str:skey>/<str:name>',mediazip),
+    path('static/<path:staticfiles>',staticfiles)
 ]
