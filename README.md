@@ -7,5 +7,4 @@ Front-end app providing user interface for [AutoEq](https://github.com/jaakkopas
 App made using React
 
 # Back-End
-Using Django
-Almost done lol
+Created with Django and some duct tapes here and there
