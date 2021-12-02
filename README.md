@@ -1,10 +1,10 @@
 # Web Version of AutoEq by jaakkopasanen
 
-# Front-End
+Web app providing user interface for [AutoEq](https://github.com/jaakkopasanen/AutoEq) by [jaakkopasanen](https://github.com/jaakkopasanen)
 
-Front-end app providing user interface for [AutoEq](https://github.com/jaakkopasanen/AutoEq) by [jaakkopasanen](https://github.com/jaakkopasanen)
+## Front-End
 
-App made using React
+Created with React
 
-# Back-End
+## Back-End
 Created with Django and some duct tapes here and there
