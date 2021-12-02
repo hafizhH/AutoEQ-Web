@@ -243,6 +243,7 @@ def getDirSource(request):
     for i in os.listdir(path):
         if i!='crinacle' and i!='referenceaudioanalyzer':
             a.append(i)
+    a=sorted(a)
     data={
         'sourcelist':a
     }
@@ -257,6 +258,7 @@ def getDirData(request,source):
         pathcloser=os.path.join(path,folder)
         for i in os.listdir(pathcloser):
             a[folder].append(i)
+        a[folder]=sorted(a[folder])
     a=json.dumps(a)
     return HttpResponse(a)
 
@@ -270,8 +272,10 @@ def inituser(request):
 
 def targetlist(request):
     path=os.path.join(BASE_DIR,'autoeqmeas','compensation')
+    a=[i for i in os.listdir(path)]
+    a=sorted(a)
     data={
-        'targetList':[i for i in os.listdir(path)]
+        'targetList':a
     }
     data=json.dumps(data)
     return HttpResponse(data)
