@@ -4,7 +4,7 @@ import styles from './styles.module.css';
 
 export default function ChooseTarget(props) {
   const [targetList, setTargetList] = useState([]);
-  const [selTarget, setSelTarget] = useState('');
+  const [selTarget, setSelTarget] = useState(' ');
   const [targetFileName, setTargetFileName] = useState('No file selected');
   const [requestStatus, setRequestStatus] = useState('');
   const [targetGraphURL, setTargetGraphURL] = useState('');
@@ -21,12 +21,19 @@ export default function ChooseTarget(props) {
 
     axios.get('http://localhost:8000/targetList')
     .then((response) => {
-      if (response.status === 200)
-        setTargetList(response.data.targetList);
+      if (response.status === 200) {
+        setTargetList([' ', ...response.data.targetList]);
+        setSelTarget(' ');
+        //document.getElementById('target').value = ' ';  //Coba ini kalau default target masih belum kosong
+      }
     }).catch((err) => console.log(err.message));
   }, []);
 
   const handleSelTargetChange = (event) => {
+    if (event.target.value === ' ') {
+      setRequestStatus('');
+      return;
+    }
     axios.post('http://localhost:8000/uploadClientData',
     {
       target: event.target.value,
@@ -79,6 +86,13 @@ export default function ChooseTarget(props) {
     }
   }
 
+  const navBack = (event) => {
+    if (sessionStorage.getItem('inputMeasurementMode') === 'Custom')
+      props.changePage('SelectMeasurement');
+    else if (sessionStorage.getItem('inputMeasurementMode') === 'Select')
+      props.changePage('SelectModel');
+  }
+
   return (
     <div id="choose-target" className={styles.page}>
       <div className={styles.pageContainer}>
@@ -89,7 +103,7 @@ export default function ChooseTarget(props) {
         <div className={`${styles.floatRight} ${styles.addHMargin}`}>
           <img id="target-graph" alt="target-graph" src={targetGraphURL} className={styles.imgGraph3x4}/>
           <span className={`${styles.header2} ${styles.centerBlock} ${styles.addVMargin}`}>Target</span>
-          <select name="measure" className={`${styles.dropdown} ${styles.text2}`} defaultValue={selTarget} onChange={handleSelTargetChange}>
+          <select id="target" name="target" className={`${styles.dropdown} ${styles.text2}`} defaultValue={selTarget} onChange={handleSelTargetChange}>
             {targetList.map((name, index) => {
               return <option key={index} className={`${styles.text2}`} value={name}>{name}</option>
             })}
@@ -100,13 +114,13 @@ export default function ChooseTarget(props) {
             <label htmlFor="targetCSV" className={`${styles.button} ${styles.centerBlock}`}>Upload</label>
             <input type="file" id="targetCSV" className={styles.hidden} name="targetCSV" accept=".csv" onChange={(event) => setTargetFileName(event.target.value)} />
             <span className={`${styles.text1} ${styles.centerBlock} ${styles.addVMargin}`}>{targetFileName}</span>
-            <button className={`${styles.button} ${styles.centerBlock} ${(targetFileName === 'No file selected' ? styles.hidden : '')}`}>Confirm</button>
+            <button className={`${styles.button} ${styles.centerBlock} ${(targetFileName === 'No file selected' ? styles.hidden : '')}`}>Submit</button>
           </form>
           <br/>
         </div>
       </div>
       <div className={styles.navigate}>
-        <button className={`${styles.button} ${styles.floatLeft}`} onClick={() => props.changePage('SelectModel')}>Back</button>
+        <button className={`${styles.button} ${styles.floatLeft}`} onClick={navBack}>Back</button>
         <button className={`${styles.button} ${styles.floatRight}`} onClick={() => navNextPage('Customize')}>Continue</button>
       </div>
     </div>

@@ -174,6 +174,25 @@ export default function Customize(props) {
       })
   }
 
+  const clampInputValue = (event, min, max, isFloat) => {
+    let value = event.target.value;
+    if (value === "") {
+      value = (isFloat ? 0.0 : 0);
+    } else if (typeof value === 'string') {
+      value = (isFloat ? Number.parseFloat(value) : Number.parseInt(value));
+      if (!isFloat)
+        event.target.value = value;
+    }
+    if (value > max) {
+      event.target.value = max;
+      return max;
+    } else if (value < min) {
+      event.target.value = min;
+      return min;
+    } else 
+      return value;
+  }
+
   return (
     <div id="customize" className={styles.page}>
       <div className={styles.pageContainer}>
@@ -184,39 +203,32 @@ export default function Customize(props) {
           <div className={styles.addVMargin}>
             <span className={`${styles.header2} ${styles.addVMargin}`}>Customize</span>
             <span className={styles.text1}>Max Gain (dB)</span>
-            <input type="range" min="-20.0" max="20.0" defaultValue={maxGain} step="0.1" id="max-gain" onChange={(event) => setMaxGain(event.target.value)}/>
-            {maxGain}
+            <input type="number" id="max-gain" className={`${styles.textInput2}`} min="-20.0" max="20.0" step="0.1" defaultValue={maxGain} onChange={(event) => setMaxGain(clampInputValue(event, -20.0, 20.0, true))}/>
             <br/>
             <span className={styles.text1}>Bass boost (dB)</span>
-            <input type="range" min="-20.0" max="20.0" defaultValue={bassBoost} step="0.1" id="bass-boost" onChange={(event) => setBassBoost(event.target.value)}/>
-            {bassBoost}
+            <input type="number" id="bass-boost" className={`${styles.textInput2}`} min="-20.0" max="20.0" step="0.1" defaultValue={bassBoost} onChange={(event) => setBassBoost(clampInputValue(event, -20.0, 20.0, true))}/>
             <br/>
             <span className={styles.text1}>Tilt (dB)</span>
-            <input type="range" min="-5.0" max="5.0" defaultValue={tilt} step="0.1" id="tilt" onChange={(event) => setTilt(event.target.value)}/>
-            {tilt}
+            <input type="number" id="tilt" className={`${styles.textInput2}`} min="-5.0" max="5.0" step="0.1" defaultValue={tilt} onChange={(event) => setTilt(clampInputValue(event, -5.0, 5.0, true))}/>
             <br/>
             <span className={styles.text1}>Treble Max Gain (dB)</span>
-            <input type="range" min="-20.0" max="20.0" defaultValue={trebleMaxGain} step="0.1" id="treble-max-gain" onChange={(event) => setTrebleMaxGain(event.target.value)}/>
-            {trebleMaxGain}
+            <input type="number" id="treble-max-gain" className={`${styles.textInput2}`} min="-20.0" max="20.0" step="0.1" defaultValue={trebleMaxGain} onChange={(event) => setTrebleMaxGain(clampInputValue(event, -20.0, 20.0, true))}/>
             <br/>
             <span className={styles.text1}>Treble Gain Coefficient</span>
-            <input type="range" min="-5.0" max="5.0" defaultValue={trebleGainCoef} step="0.1" id="treble-gain-coef" onChange={(event) => setTrebleGainCoef(event.target.value)}/>
-            {trebleGainCoef}
+            <input type="number" id="treble-gain-coef" className={`${styles.textInput2}`} min="-5.0" max="5.0" step="0.1" defaultValue={trebleGainCoef} onChange={(event) => setTrebleGainCoef(clampInputValue(event, -5.0, 5.0, true))}/>
             <br/>
             <span className={styles.text1}>Treble Transition Frequencies Start</span>
-            <input type="range" min="20" max="20000" defaultValue={trebleTransFreqStart} step="10" id="treble-trans-freqstart" onChange={(event) => setTrebleTransFreqStart(event.target.value)}/>
-            {trebleTransFreqStart}
+            <input type="number" id="treble-trans-freqstart" className={`${styles.textInput2}`} min="20" max="20000" step="10" defaultValue={trebleTransFreqStart} onChange={(event) => setTrebleTransFreqStart(clampInputValue(event, 20, 20000, false))}/>
             <br/>
             <span className={styles.text1}>Treble Transition Frequencies End</span>
-            <input type="range" min="20" max="20000" defaultValue={trebleTransFreqEnd} step="10" id="treble-trans-freqend" onChange={(event) => setTrebleTransFreqEnd(event.target.value)}/>
-            {trebleTransFreqEnd}
+            <input type="number" id="treble-trans-freqend" className={`${styles.textInput2}`} min="20" max="20000" step="10" defaultValue={trebleTransFreqEnd} onChange={(event) => setTrebleTransFreqEnd(clampInputValue(event, 20, 20000, false))}/>
             <br/>
             <span className={styles.text1}>Sound Signature</span>
             <form enctype="multipart/form-data" onSubmit={handleSubmit} className={styles.centerBlock}>
               <label htmlFor="soundSignature" className={`${styles.button} ${styles.addVMargin}`}>Upload CSV</label>
               <input type="file" id="soundSignature" className={styles.hidden} name="soundSignature" accept=".csv" onChange={(event) => setFile(event.target.files[0].name)} />
               <span className={`${styles.text1} ${styles.addVMargin}`}>{file}</span>
-              <button className={`${styles.button} ${styles.centerBlock} ${(file === 'No file selected' ? styles.hidden : '')}`}>Confirm</button>
+              <button className={`${styles.button} ${styles.centerBlock} ${(file === 'No file selected' ? styles.hidden : '')}`}>Submit</button>
             </form>
             <br/>
             <br/>
@@ -238,8 +250,7 @@ export default function Customize(props) {
             </label>
             <div className={(peq === 0 ? styles.hidden : `${styles.popupPanel} ${styles.addVMargin} `)}>
               <span className={styles.text1}>Max filters</span>
-              <input type="range" min="1" max="64" defaultValue={maxFilters} step="1" id="max-filters" onChange={(event) => setMaxFilters(event.target.value)}/>
-              {maxFilters}
+              <input type="number" id="max-filters" className={`${styles.textInput2}`} min="1" max="64" step="1" defaultValue={maxFilters} onChange={(event) => setMaxFilters(clampInputValue(event, 1, 64, false))}/>
             </div>
             <br/><br/>
             <label htmlFor="convolutionEQ" className={`${styles.text1} ${styles.switchLabel}`}>
